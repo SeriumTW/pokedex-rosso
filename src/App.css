@@ -53,3 +53,11 @@ button {
     padding: 10px;
   }
 }
+
+/* Aggiunta delle regole per il container principale */
+@media (max-width: 768px) {
+  .App {
+    padding: 0;
+    min-height: 100vh;
+  }
+}

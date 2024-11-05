@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import PokemonCard from "./PokemonCard";
+import PokemonDetail from "./PokemonDetail";
 import "./PokemonList.css";
 
 const POKEMON_TYPES = {
@@ -26,6 +27,8 @@ const PokemonList = () => {
   const [loading, setLoading] = useState(true);
   const [selectedType, setSelectedType] = useState("all");
   const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedPokemon, setSelectedPokemon] = useState(null);
 
   useEffect(() => {
     const fetchPokemon = async () => {
@@ -41,6 +44,15 @@ const PokemonList = () => {
           id: response.data.id,
           name: response.data.name,
           types: response.data.types.map((type) => type.type.name),
+          stats: response.data.stats,
+          height: response.data.height,
+          weight: response.data.weight,
+          abilities: response.data.abilities,
+          sprites: {
+            front: response.data.sprites.front_default,
+            back: response.data.sprites.back_default,
+            shiny: response.data.sprites.front_shiny,
+          },
         }));
         setPokemon(pokemonData);
       } catch (error) {
@@ -54,10 +66,9 @@ const PokemonList = () => {
     fetchPokemon();
   }, []);
 
-  const filteredPokemon =
-    selectedType === "all"
-      ? pokemon
-      : pokemon.filter((p) => p.types.includes(selectedType));
+  const filteredPokemon = pokemon
+    .filter((p) => p.name.toLowerCase().includes(searchTerm.toLowerCase()))
+    .filter((p) => selectedType === "all" || p.types.includes(selectedType));
 
   if (error) {
     return (
@@ -84,6 +95,16 @@ const PokemonList = () => {
             <div className="small-light"></div>
           </div>
         </div>
+      </div>
+      <div className="search-container">
+        <input
+          type="text"
+          className="search-input"
+          placeholder="Cerca Pokémon..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          aria-label="Cerca Pokémon"
+        />
       </div>
       <div className="pokedex-screen">
         {loading ? (
@@ -133,7 +154,7 @@ const PokemonList = () => {
               aria-label="Lista Pokemon"
             >
               {filteredPokemon.map((p) => (
-                <div key={p.id} role="listitem">
+                <div key={p.id} onClick={() => setSelectedPokemon(p)}>
                   <PokemonCard pokemon={p} />
                 </div>
               ))}
@@ -141,6 +162,12 @@ const PokemonList = () => {
           </>
         )}
       </div>
+      {selectedPokemon && (
+        <PokemonDetail
+          pokemon={selectedPokemon}
+          onClose={() => setSelectedPokemon(null)}
+        />
+      )}
       <div className="pokedex-bottom">
         <div className="control-pad" aria-hidden="true">
           <div className="d-pad">
